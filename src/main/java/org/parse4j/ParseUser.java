@@ -249,5 +249,67 @@ public class ParseUser extends ParseObject {
 			LoginCallback callback) {
 
 	}
+
+	public static ParseUser validate (String sessionToken) throws ParseException {
+
+		currentUser = null;
+		ParseGetCommand command = new ParseGetCommand("users/me");
+		command.addJson(false);
+		command.put(ParseConstants.FIELD_SESSION_TOKEN, sessionToken);
+		ParseResponse response = command.perform();
+
+		if (!response.isFailed()) {
+			JSONObject jsonResponse = response.getJsonObject();
+			if (jsonResponse == null) {
+				LOGGER.error("Empty response.");
+				throw response.getException();
+			}
+			try {
+				ParseUser parseUser = new ParseUser();
+				parseUser.setObjectId(jsonResponse.getString(ParseConstants.FIELD_OBJECT_ID));
+				parseUser.setSessionToken(jsonResponse.getString(ParseConstants.FIELD_SESSION_TOKEN));
+				currentUser = parseUser;
+				String createdAt = jsonResponse.getString(ParseConstants.FIELD_CREATED_AT);
+				String updatedAt = jsonResponse.getString(ParseConstants.FIELD_UPDATED_AT);
+				parseUser.setCreatedAt(Parse.parseDate(createdAt));
+				parseUser.setUpdatedAt(Parse.parseDate(updatedAt));
+				jsonResponse.remove(ParseConstants.FIELD_OBJECT_ID);
+				jsonResponse.remove(ParseConstants.FIELD_CREATED_AT);
+				jsonResponse.remove(ParseConstants.FIELD_UPDATED_AT);
+				jsonResponse.remove(ParseConstants.FIELD_SESSION_TOKEN);
+				parseUser.setData(jsonResponse, false);
+				return parseUser;
+
+			} catch (JSONException e) {
+				LOGGER.error("Although Parse reports object successfully saved, the response was invalid.");
+				throw new ParseException(
+						ParseException.INVALID_JSON,
+						"Although Parse reports object successfully saved, the response was invalid.",
+						e);
+			}
+		} else {
+			LOGGER.error("Invalid token.");
+			throw response.getException();
+		}
+	}
+
+		public static void logout (String sessionToken) throws ParseException {
+
+			currentUser = null;
+			ParsePostCommand command = new ParsePostCommand("logout");
+			command.put(ParseConstants.FIELD_SESSION_TOKEN, sessionToken);
+			ParseResponse response = command.perform();
+
+			if(!response.isFailed()) {
+				return;
+			}
+			else {
+				LOGGER.error("Error while logging out.");
+				throw response.getException();
+			}
+
+		}
+
+
+	}
 	
-}
