@@ -160,20 +160,7 @@ public class ParseUser extends ParseObject {
 				throw response.getException();
 			}
 			try {
-				ParseUser parseUser = new ParseUser();
-				parseUser.setObjectId(jsonResponse.getString(ParseConstants.FIELD_OBJECT_ID));
-				parseUser.setSessionToken(jsonResponse.getString(ParseConstants.FIELD_SESSION_TOKEN));
-				currentUser = parseUser;
-				String createdAt = jsonResponse.getString(ParseConstants.FIELD_CREATED_AT);
-				String updatedAt = jsonResponse.getString(ParseConstants.FIELD_UPDATED_AT);
-				parseUser.setCreatedAt(Parse.parseDate(createdAt));
-				parseUser.setUpdatedAt(Parse.parseDate(updatedAt));
-				jsonResponse.remove(ParseConstants.FIELD_OBJECT_ID);
-				jsonResponse.remove(ParseConstants.FIELD_CREATED_AT);
-				jsonResponse.remove(ParseConstants.FIELD_UPDATED_AT);
-				jsonResponse.remove(ParseConstants.FIELD_SESSION_TOKEN);
-				parseUser.setData(jsonResponse, false);
-				return parseUser;
+				return mapUserFromJson(jsonResponse);
 				
 			}catch (JSONException e) {
 				LOGGER.error("Although Parse reports object successfully saved, the response was invalid.");
@@ -251,7 +238,6 @@ public class ParseUser extends ParseObject {
 	}
 
 	public static ParseUser validate (String sessionToken) throws ParseException {
-
 		currentUser = null;
 		ParseGetCommand command = new ParseGetCommand("users/me");
 		command.addJson(false);
@@ -265,20 +251,7 @@ public class ParseUser extends ParseObject {
 				throw response.getException();
 			}
 			try {
-				ParseUser parseUser = new ParseUser();
-				parseUser.setObjectId(jsonResponse.getString(ParseConstants.FIELD_OBJECT_ID));
-				parseUser.setSessionToken(jsonResponse.getString(ParseConstants.FIELD_SESSION_TOKEN));
-				currentUser = parseUser;
-				String createdAt = jsonResponse.getString(ParseConstants.FIELD_CREATED_AT);
-				String updatedAt = jsonResponse.getString(ParseConstants.FIELD_UPDATED_AT);
-				parseUser.setCreatedAt(Parse.parseDate(createdAt));
-				parseUser.setUpdatedAt(Parse.parseDate(updatedAt));
-				jsonResponse.remove(ParseConstants.FIELD_OBJECT_ID);
-				jsonResponse.remove(ParseConstants.FIELD_CREATED_AT);
-				jsonResponse.remove(ParseConstants.FIELD_UPDATED_AT);
-				jsonResponse.remove(ParseConstants.FIELD_SESSION_TOKEN);
-				parseUser.setData(jsonResponse, false);
-				return parseUser;
+				return mapUserFromJson(jsonResponse);
 
 			} catch (JSONException e) {
 				LOGGER.error("Although Parse reports object successfully saved, the response was invalid.");
@@ -294,7 +267,6 @@ public class ParseUser extends ParseObject {
 	}
 
 		public static void logout (String sessionToken) throws ParseException {
-
 			currentUser = null;
 			ParsePostCommand command = new ParsePostCommand("logout");
 			command.put(ParseConstants.FIELD_SESSION_TOKEN, sessionToken);
@@ -310,6 +282,23 @@ public class ParseUser extends ParseObject {
 
 		}
 
+
+		private static ParseUser mapUserFromJson (JSONObject jsonResponse){
+			ParseUser parseUser = new ParseUser();
+			parseUser.setObjectId(jsonResponse.getString(ParseConstants.FIELD_OBJECT_ID));
+			parseUser.setSessionToken(jsonResponse.getString(ParseConstants.FIELD_SESSION_TOKEN));
+			currentUser = parseUser;
+			String createdAt = jsonResponse.getString(ParseConstants.FIELD_CREATED_AT);
+			String updatedAt = jsonResponse.getString(ParseConstants.FIELD_UPDATED_AT);
+			parseUser.setCreatedAt(Parse.parseDate(createdAt));
+			parseUser.setUpdatedAt(Parse.parseDate(updatedAt));
+			jsonResponse.remove(ParseConstants.FIELD_OBJECT_ID);
+			jsonResponse.remove(ParseConstants.FIELD_CREATED_AT);
+			jsonResponse.remove(ParseConstants.FIELD_UPDATED_AT);
+			jsonResponse.remove(ParseConstants.FIELD_SESSION_TOKEN);
+			parseUser.setData(jsonResponse, false);
+			return parseUser;
+		}
 
 	}
 	
